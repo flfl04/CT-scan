@@ -1,0 +1,16 @@
+clc;
+close all;
+%creating the angles of projection
+%starting at one degree and ending at 180 degree with step of one degree
+angles=[1:1:180];
+
+%input image(CT_2_1_)will refer to it as ip_image
+
+%creating the sinogram using radon transform 
+sg=myRadon(ip_image,angles);
+
+%backprojecting the sinogram 
+BPI = myBackprojection(sg,angles);
+
+%filtering the backprojection to remove the blurre of the photo
+fbp= myFilteredBackprojection2D(sg,angles);
