@@ -1,0 +1,44 @@
+% Setting the color scale %
+my_num_of_colors = 256;
+col_scale =  [0:1/(my_num_of_colors-1):1]';
+my_color_scale = [col_scale,col_scale,col_scale];
+% Set to_save to 1, if we want to save the generated pictures %
+to_save  = 0;
+is_color = 1;
+tic;
+%% Load Image to be reconstructed
+
+% Loading the denoised image
+original_image =ct2; %ct2 is the real data image (distorted/noisy) imported into the matlab 
+figure(1); imshow(original_image);
+imshow(original_image);
+min_val = min(min(original_image));
+max_val = max(max(original_image));
+range = max_val - min_val;
+original_image = (original_image - min_val)/(range);
+savefig(my_color_scale,original_image,"Updated image","Updated image.png",1,to_save);
+[h,w] = size(original_image);
+%% Setting parameters of Radon Transform
+% Note : del_t has to be an integer and make sure the num_bins divide h perfectly and are themselves integers
+num_bins  = h;
+num_views = 180;
+start_ang = 0;
+stop_ang  = 180;
+del_ang   = (stop_ang - start_ang)/num_views;
+del_t     = h/num_bins;
+lambda    = 0.5;
+n_iter    = 5;
+%% Construct 'b' the radon transform
+radon_transform = constructRadonTransform(original_image, num_bins, num_views, start_ang, stop_ang, del_ang, del_t);
+%% Construct matrix A
+imaging_matrix = constructImagingMatrix(original_image, num_bins, num_views, start_ang, stop_ang, del_ang, del_t);
+%% Find attenuation coefficient matrix 'x'
+[attenuation, rrmse_list_1] = additiveART(radon_transform, imaging_matrix, n_iter, num_views, start_ang, del_ang, stop_ang, lambda, original_image);
+end
+lambda=1;
+[attenuation, rrmse_list_2] = additiveART(radon_transform, imaging_matrix, n_iter, num_views, start_ang, del_ang, stop_ang, lambda, original_image);
+lambda=1.5;
+[attenuation, rrmse_list_3] = additiveART(radon_transform, imaging_matrix, n_iter, num_views, start_ang, del_ang, stop_ang, lambda, original_image);
+fprintf('For the lambda =0.5 ,the RRMSE value of the last iteration= '); rrmse_list_1
+fprintf('For the lambda =1 ,the RRMSE value of the last iteration= '); rrmse_list_2
+fprintf('For the lambda =1.5 ,the RRMSE value of the last iteration= '); rrmse_list_3
